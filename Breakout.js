@@ -1,20 +1,49 @@
 let paddle;
 let ball;
+let blocks = [];
+let rows = 3;
+let cols = 8;
+let score = 0;
+
 
 function setup() {
   createCanvas(600, 400);
   paddle = new Paddle();
   ball = new Ball();
+  for (let i = 0; i < rows; i++) {
+  for (let j = 0; j < cols; j++) {
+    let blockWidth = 60;
+    let blockHeight = 20;
+    let x = j * (blockWidth + 10) + 35;
+    let y = i * (blockHeight + 10) + 40;
+    blocks.push(new Block(x, y, blockWidth, blockHeight));
+  }
+}
+
 }
 
 function draw() {
   background(0);
+  textSize(16);
+  fill(255);
+  text("Puntuación: " + score, 10, 20);
+
   paddle.show();
   paddle.move();
   ball.show();
   ball.update();
   ball.checkEdges();
   ball.checkPaddle(paddle);
+
+  for (let i = blocks.length - 1; i >= 0; i--) {
+  blocks[i].show();
+  if (ball.hits(blocks[i])) {
+    blocks.splice(i, 1);
+    ball.yspeed *= -1;
+    score++;
+  }
+}
+
 }
 
 function keyPressed() {
@@ -54,6 +83,20 @@ class Paddle {
     this.x = constrain(this.x, 0, width - this.w);
   }
 }
+class Block {
+  constructor(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+  }
+
+  show() {
+    fill(255, 150, 0);
+    rect(this.x, this.y, this.w, this.h);
+  }
+}
+
 
 class Ball {
   constructor() {
@@ -104,4 +147,15 @@ class Ball {
     this.xspeed = 4 * (random() > 0.5 ? 1 : -1);
     this.yspeed = -4;
   }
+  
+  hits(block) {
+  return (
+    this.x + this.r > block.x &&
+    this.x - this.r < block.x + block.w &&
+    this.y + this.r > block.y &&
+    this.y - this.r < block.y + block.h
+  );
+}
+
+  
 }
