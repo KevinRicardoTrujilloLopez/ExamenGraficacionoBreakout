@@ -5,6 +5,7 @@ let score = 0;
 let lives = 3;
 let level = 1;
 let totalLevels = 3;
+let gameWon = false;
 
 function setup() {
   createCanvas(600, 400);
@@ -39,11 +40,23 @@ function draw() {
     }
   }
 
-  // Transición entre niveles
-  if (blocks.length === 0 && level < totalLevels) {
-    level++;
-    generateBlocks();
-    ball.reset();
+
+  if (blocks.length === 0) {
+    if (level < totalLevels) {
+      level++;
+      generateBlocks();
+      ball.reset();
+    } else {
+      gameWon = true;
+      noLoop();
+    }
+  }
+
+  if (gameWon) {
+    textSize(32);
+    fill(0, 255, 0);
+    textAlign(CENTER, CENTER);
+    text("¡Felicidades, ganaste!", width / 2, height / 2);
   }
 }
 
@@ -205,6 +218,20 @@ function generateBlocks() {
         let x = j * (50 + 5) + 20;
         let y = i * (20 + 5) + 40;
         let hits = random() < 0.2 ? 3 : 1;
+        blocks.push(new Block(x, y, 50, 20, hits));
+      }
+    }
+
+    ball.xspeed *= 1.2;
+    ball.yspeed *= 1.2;
+  }
+
+  if (level === 3) {
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 10; j++) {
+        let x = j * (50 + 5) + 20;
+        let y = i * (20 + 5) + 40;
+        let hits = random() < 0.3 ? 3 : 1;
         blocks.push(new Block(x, y, 50, 20, hits));
       }
     }
