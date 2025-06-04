@@ -4,6 +4,7 @@ let blocks = [];
 let rows = 3;
 let cols = 8;
 let score = 0;
+let lives = 3;
 
 
 function setup() {
@@ -26,7 +27,9 @@ function draw() {
   background(0);
   textSize(16);
   fill(255);
-  text("Puntuación: " + score, 10, 20);
+ text("Puntuación: " + score, 10, 20);
+  text("Vidas: " + lives, width - 100, 20);
+  
 
   paddle.show();
   paddle.move();
@@ -113,9 +116,17 @@ class Ball {
   }
 
   update() {
-    this.x += this.xspeed;
-    this.y += this.yspeed;
+  let speed = sqrt(this.xspeed * this.xspeed + this.yspeed * this.yspeed);
+  let maxSpeed = 2;
+
+  if (speed > maxSpeed) {
+    this.xspeed *= maxSpeed / speed;
+    this.yspeed *= maxSpeed / speed;
   }
+
+  this.x += this.xspeed;
+  this.y += this.yspeed;
+}
 
   checkEdges() {
     if (this.x < 0 || this.x > width) {
@@ -130,23 +141,43 @@ class Ball {
   }
 
   checkPaddle(p) {
-    if (
-      this.x > p.x &&
-      this.x < p.x + p.w &&
-      this.y + this.r > p.y &&
-      this.y - this.r < p.y + p.h
-    ) {
-      this.yspeed *= -1;
-      this.y = p.y - this.r;
-    }
+  if (
+    this.x > p.x &&
+    this.x < p.x + p.w &&
+    this.y + this.r > p.y &&
+    this.y - this.r < p.y + p.h
+  ) {
+    let hitPos = (this.x - (p.x + p.w / 2)) / (p.w / 2);
+    let angle = hitPos * PI / 3; // Rango de -60 a +60 grados
+    let speed = sqrt(this.xspeed * this.xspeed + this.yspeed * this.yspeed);
+
+    this.xspeed = speed * sin(angle);
+    this.yspeed = -abs(speed * cos(angle));
+    this.y = p.y - this.r; // Corrige posición para evitar rebotes repetidos
   }
+}
+
 
   reset() {
+  lives--;
+  if (lives <= 0) {
+    this.gameOver();
+  } else {
     this.x = width / 2;
     this.y = height / 2;
     this.xspeed = 4 * (random() > 0.5 ? 1 : -1);
     this.yspeed = -4;
   }
+}
+
+gameOver() {
+  noLoop(); // Detiene el juego
+  textSize(32);
+  fill(255, 0, 0);
+  textAlign(CENTER, CENTER);
+  text("Game Over", width / 2, height / 2);
+}
+
   
   hits(block) {
   return (
