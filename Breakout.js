@@ -15,9 +15,11 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  setGradient(0, 0, width, height, color(10, 10, 30), color(0, 200, 255), 'Y');
+
+  textFont('Orbitron');
   textSize(16);
-  fill(255);
+  fill(0, 255, 255);
   text("Puntuación: " + score, 10, 20);
   text("Vidas: " + lives, width - 100, 20);
 
@@ -32,16 +34,23 @@ function draw() {
     blocks[i].show();
     if (ball.hits(blocks[i])) {
       ball.yspeed *= -1;
-      blocks[i].hits--;
-      if (blocks[i].hits <= 0) {
-        blocks.splice(i, 1);
-        score++;
+
+      if (blocks[i].hits !== -1) {
+        blocks[i].hits--;
+        if (blocks[i].hits <= 0) {
+          blocks.splice(i, 1);
+          score++;
+        }
       }
     }
   }
 
+  if (blocks.every(block => block.hits === -1)) {
+    gameWon = true;
+    noLoop();
+  }
 
-  if (blocks.length === 0) {
+  if (blocks.length === 0 || blocks.every(block => block.hits === -1)) {
     if (level < totalLevels) {
       level++;
       generateBlocks();
@@ -54,9 +63,19 @@ function draw() {
 
   if (gameWon) {
     textSize(32);
-    fill(0, 255, 0);
+    fill(0, 255, 255);
     textAlign(CENTER, CENTER);
     text("¡Felicidades, ganaste!", width / 2, height / 2);
+  }
+}
+
+function setGradient(x, y, w, h, c1, c2, axis) {
+  noFill();
+  for (let i = y; i <= y + h; i++) {
+    let inter = map(i, y, y + h, 0, 1);
+    let c = lerpColor(c1, c2, inter);
+    stroke(c);
+    line(x, i, x + w, i);
   }
 }
 
@@ -84,8 +103,8 @@ class Paddle {
   }
 
   show() {
-    fill(255);
-    rect(this.x, this.y, this.w, this.h);
+    fill(0, 255, 255);
+    rect(this.x, this.y, this.w, this.h, 10);
   }
 
   setDir(dir) {
@@ -108,10 +127,14 @@ class Block {
   }
 
   show() {
-    if (this.hits === 3) fill(255, 0, 0);
-    else if (this.hits === 2) fill(255, 165, 0);
-    else fill(255, 255, 0);
-    rect(this.x, this.y, this.w, this.h);
+    if (this.hits === -1) fill(100, 100, 100); 
+    else if (this.hits === 3) fill(255, 0, 255);
+    else if (this.hits === 2) fill(0, 255, 150);
+    else fill(0, 100, 255);
+
+    stroke(255);
+    strokeWeight(1);
+    rect(this.x, this.y, this.w, this.h, 5);
   }
 }
 
@@ -126,6 +149,8 @@ class Ball {
 
   show() {
     fill(255);
+    stroke(0, 255, 255);
+    strokeWeight(2);
     ellipse(this.x, this.y, this.r * 2);
   }
 
@@ -231,7 +256,15 @@ function generateBlocks() {
       for (let j = 0; j < 10; j++) {
         let x = j * (50 + 5) + 20;
         let y = i * (20 + 5) + 40;
-        let hits = random() < 0.3 ? 3 : 1;
+        let rand = random();
+        let hits;
+        if (rand < 0.15) {
+          hits = -1; 
+        } else if (rand < 0.4) {
+          hits = 3;
+        } else {
+          hits = 1;
+        }
         blocks.push(new Block(x, y, 50, 20, hits));
       }
     }
